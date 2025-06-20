@@ -1,3 +1,39 @@
+## Setup Instructions
+
+This project can be implemented on any Linux-based Server or local machine. However, this instruction assumes that the server is an AWS EC2 instance running on ubuntu 24.04
+
+### Prerequisite
+
+- AWS EC2 instance running on ubuntu with git and docker installed.
+- Docker engine installed
+- Basic knowledge of docker, linux cli, prometheus, and grafana
+
+### Sever Setup (Containerized Prometheus, Grafana, and Node Exporter)
+
+- ssh into your EC2 instance
+- run ```git clone https://github.com/mr-robertamoah/amalitech_gtp_phase_two_prometheus_and_graphana```
+- run ```sudo docker compose up -d```
+- Verify that your containers are running by ```sudo docker compose ps``` You will see a results similar to this:
+
+```bash
+NAME            IMAGE                        COMMAND                  SERVICE         CREATED       STATUS       PORTS
+grafana         grafana/grafana-oss:latest   "/run.sh"                grafana         2 hours ago   Up 2 hours   0.0.0.0:3000->3000/tcp, [::]:3000->3000/tcp
+node-exporter   prom/node-exporter:latest    "/bin/node_exporter …"   node-exporter   2 hours ago   Up 2 hours   0.0.0.0:9100->9100/tcp, [::]:9100->9100/tcp
+prometheus      prom/prometheus:latest       "/bin/prometheus --c…"   prometheus      2 hours ago   Up 2 hours   0.0.0.0:9090->9090/tcp, [::]:9090->9090/tcp
+```
+
+- Open the Prometheus Client in your browser ```http://your-instance-ip:9090/targets``` 
+
+- Open the Grafana Dashboard in your browser ```http://your-instance-ip:3000```
+
+  - Enter ```admin``` as both the username and password.
+  - Update your password when prompted.
+
+### Building the Dashboards
+
+[Follow this blog](https://betterstack.com/community/guides/monitoring/visualize-prometheus-metrics-grafana/#configuring-the-prometheus-data-source) to for a step-by-step guide on building the dashboard.
+
+
 ## Questions
 
 ### Question 1: Container Orchestration Analysis
@@ -54,13 +90,20 @@ node_filesystem_size_bytes{mountpoint="/"})
 Break down the mathematical logic, explain why the result needs to be subtracted from 1, and discuss what could go wrong if you monitoring multiple mount points with this approach. How would you modify this query to exclude temporary filesystems?
 
 #### Answer
+node_filesystem_avail_bytes{mountpoint="/"} /
+node_filesystem_size_bytes{mountpoint="/"} gives a ratio of the available storage size of the mount to the total size of the mount. It is then subtracted from 1 to get a fraction of storage mount that is in use.
 
+Multiple mount problems will exist because different filesystems have different usage patterns and temporary filesystems will skew results.
 
 ### Question 7: Visualization Type Justification
 The tutorial uses three different visualization types: Stat, Time Series, and Gauge. For each visualization created in the lab, justify why that specific type was chosen over alternatives. What criteria should guide visualization selection, and when might your choices be suboptimal?
 
 #### Answer
+Guage was used for the percentage of memory used because it helps to show a percentage value while showing different colors of thresholds.
 
+The time series was used for the Total RAM and Used RAM because it helps to show the trend of memory usage over time.
+
+The Stat was used for Uptime of the system because a single value with or without graph using a specific unit.
 
 ### Question 8: Threshold Configuration Strategy
 Explain the reasoning behind the 80% threshold setting for disk usage in the gauge chart.
